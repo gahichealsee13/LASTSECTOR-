@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Last Sector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet" href="expansion.css">
+</head>
+<body>
+<div id="splash">
+  <div class="splash-wrap">
+    <div class="splash-mark">LAST<span>·</span>SECTOR</div>
+    <div class="splash-bar"><i id="splashFill"></i></div>
+    <div class="splash-tip" id="splashTip">Baking wall textures…</div>
+  </div>
+</div>
+<div id="landing">
+  <nav class="site-nav">
+    <div class="mark">LAST<span>·</span>SECTOR</div>
+    <button id="navDeploy">Deploy</button>
+  </nav>
+
+  <header class="hero">
+    <canvas id="heroScene"></canvas>
+    <div class="hero-fade"></div>
+    <div class="hero-content">
+      <p class="hero-kicker">A BROWSER FIRST-PERSON SHOOTER</p>
+      <h1>Hold every<br>sector.</h1>
+      <p>Five locations, fought in order, each with its own light, weather and architecture. Manage your mags, watch your flanks, and clear the compound one wave at a time — no install, no plugin, runs straight in the tab.</p>
+      <div class="hero-ctas">
+        <button class="cta-primary" id="heroDeploy">Deploy</button>
+        <button class="cta-ghost" data-laststand="1">Last Stand</button>
+        <button class="cta-ghost" id="heroScroll">See the locations</button>
+      </div>
+      <div class="hero-meta">
+        <div><span>5</span><em>LOCATIONS</em></div>
+        <div><span>3</span><em>WEAPONS</em></div>
+        <div><span>19</span><em>WAVES TOTAL</em></div>
+      </div>
+      <p style="max-width:52ch;color:var(--smoke);font-size:13px;line-height:1.6;margin-top:18px">
+        Or skip the campaign — <b style="color:var(--bone)">Last Stand</b> drops you alone in one open field with scattered cover and no walls. One life, no final wave. See how many you can hold off.
+      </p>
+    </div>
+  </header>
+
+  <section id="locations">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">THE CAMPAIGN</p>
+        <h2>Five places to lose ground.</h2>
+        <p>Every location changes the wall textures, the sky, the haze distance and which squads you'll meet — the previews below are rendered from the same texture generator the game runs on, not screenshots.</p>
+      </div>
+      <div class="loc-grid" id="locGrid"></div>
+    </div>
+  </section>
+
+  <section id="loadout">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">ARMOURY</p>
+        <h2>Three guns, three jobs.</h2>
+        <p>Switch mid-fight with 1 / 2 / 3 or scroll. Reserve ammo tops up a little on every kill, so aggression keeps you fed.</p>
+      </div>
+      <div class="load-grid" id="loadGrid"></div>
+    </div>
+  </section>
+
+  <section id="manual">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">FIELD MANUAL</p>
+        <h2>Controls.</h2>
+      </div>
+      <ul class="keys-grid">
+        <li><kbd>W A S D</kbd> Move</li>
+        <li><kbd>Mouse</kbd> Look</li>
+        <li><kbd>Click</kbd> Fire</li>
+        <li><kbd>R-Click</kbd> Aim down sight</li>
+        <li><kbd>Shift</kbd> Sprint</li><li><kbd>G</kbd> Grenade</li><li><kbd>4</kbd><kbd>5</kbd> SMG / Sniper</li><li><kbd>V</kbd> Melee</li><li><kbd>F</kbd> Ability</li><li><kbd>E</kbd> Fire</li><li><kbd>Z</kbd> Aim</li><li><kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> Look</li>
+        <li><kbd>Space</kbd> Jump</li>
+        <li><kbd>C</kbd> Crouch</li>
+        <li><kbd>R</kbd> Reload</li>
+        <li><kbd>1 2 3</kbd> Switch weapon</li>
+        <li><kbd>Esc</kbd> Pause &amp; settings</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="closer">
+    <div class="wrap">
+      <h2>The compound isn't<br>going to hold itself.</h2>
+      <p>Brightness, haze, field of view and look speed are all adjustable once you're in — from the pause menu, mid-mission.</p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+        <button class="cta-primary" id="closerDeploy">Deploy</button>
+        <button class="cta-ghost" data-laststand="1">Last Stand</button>
+      </div>
+    </div>
+    <div class="wrap site-foot">
+      <span>Last Sector — a browser FPS, built with HTML canvas and raw JavaScript.</span>
+      <span>No install. No plugin. Runs in the tab.</span>
+    </div>
+  </section>
+</div>
+
+<div id="stage">
+  <canvas id="glview"></canvas>
+  <canvas id="view"></canvas>
+
+  <div id="vignette"></div>
+  <div id="lowhp"></div>
+  <div id="damage"></div>
+
+  <div id="hud">
+    <div class="corner tl">
+      <div class="stat-label">LOCATION</div>
+      <div id="placeName" style="font-size:24px;font-weight:600;letter-spacing:.02em">Dust Quarter</div>
+      <div id="placeWhere" style="font-family:var(--body-font);font-size:11px;color:var(--smoke);margin-top:3px">Khareb market road · 06:40</div>
+      <div class="stat-label" style="margin-top:16px">WAVE</div>
+      <div class="big" id="waveNum">1</div>
+      <div class="stat-label" style="margin-top:14px">HOSTILES</div>
+      <div class="mid" id="enemyNum">0</div>
+    </div>
+
+    <div class="corner tr">
+      <canvas id="mapCanvas" width="264" height="264"></canvas>
+      <div id="feed"></div>
+    </div>
+
+    <div id="floaters" style="inset:0"></div><div id="combo"></div><div id="bossBar"><span id="bossName">WARLORD</span><div><i id="bossFill"></i></div></div><div id="toast"></div>
+    <button id="pauseBtn" type="button">❚❚ PAUSE · P</button><div id="callout"></div><div id="trainBox"></div><div id="streak"></div><div id="objBox"></div>
+    <div class="corner bl">
+      <div id="healthWrap">
+        <div id="healthNum">100</div>
+        <div id="healthBar"><div id="healthFill"></div></div>
+        <div class="stat-label" style="margin-top:8px">SCORE <span id="scoreNum" style="color:var(--bone)">0</span></div>
+        <div class="stat-label" id="extraLine" style="margin-top:6px"></div>
+      </div>
+    </div>
+
+    <div class="corner br">
+      <div id="ammoNum">30<small> / 210</small></div>
+      <div id="gunName">MK-4 CARBINE</div>
+      <div id="reloadTip">PRESS R TO RELOAD</div>
+      <div id="slots">
+        <div class="slot on" data-i="0">1 CARBINE</div>
+        <div class="slot" data-i="1">2 BREACHER</div>
+        <div class="slot" data-i="2">3 SIDEARM</div>
+        <div class="slot" data-i="3">4 SMG</div>
+        <div class="slot" data-i="4">5 SNIPER</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="banner"><div class="b1" id="bTop">INCOMING</div><div class="b2" id="bMain">WAVE 1</div></div>
+
+  <div id="touch">
+    <div id="stickBase"><div id="stickNub"></div></div>
+    <div class="tbtn" id="btnFire">FIRE</div>
+    <div class="tbtn" id="btnReload">RELOAD</div>
+    <div class="tbtn" id="btnSwap">SWAP</div>
+    <div class="tbtn" id="btnJump">JUMP</div>
+    <div class="tbtn" id="btnCrouch">CROUCH</div>
+  </div>
+
+  <!-- mission select -->
+  <div class="screen" id="menuScreen">
+    <div class="panel">
+      <button class="menu-back" id="menuBackBtn">← Back to briefing</button>
+      <div class="kicker">MISSION SELECT</div>
+      <h1 style="font-size:clamp(34px,7vw,56px)">Plan the drop.</h1>
+      <div class="modeTabs">
+        <button class="modeTab" id="tabCampaign" data-mode="campaign">CAMPAIGN</button>
+        <button class="modeTab" id="tabLastStand" data-mode="laststand">LAST STAND</button>
+      </div>
+
+      <div id="menuLevelSection">
+        <div class="menu-label">LOCATION</div>
+        <div class="pick-grid" id="menuLevelGrid"></div>
+      </div>
+
+      <div class="menu-label">CAMERA</div>
+      <div class="pov-row">
+        <button class="pov-btn" data-pov="fp">FIRST PERSON</button>
+        <button class="pov-btn" data-pov="tp">THIRD PERSON</button>
+      </div>
+
+      <div class="menu-label">DIFFICULTY</div>
+      <div class="pov-row">
+        <button class="pov-btn" data-diff="easy">EASY</button>
+        <button class="pov-btn" data-diff="normal">NORMAL</button>
+        <button class="pov-btn" data-diff="hard">HARD</button>
+      </div>
+
+      <div class="menu-label">SQUAD</div>
+      <div class="pov-row">
+        <button class="pov-btn" data-coop="0">SOLO</button>
+        <button class="pov-btn" data-coop="1">+ BUDDY (ARROWS/ENTER)</button>
+      </div>
+
+      <div class="menu-label">OPERATOR</div>
+      <div class="pick-grid" id="menuCharGrid"></div>
+
+      <div class="menu-label">PERK</div>
+      <div class="pov-row">
+        <button class="pov-btn" data-perk="0">FAST HANDS</button>
+        <button class="pov-btn" data-perk="1">VITALITY</button>
+        <button class="pov-btn" data-perk="2">LIGHT STEP</button>
+      </div>
+
+      <div class="menu-label">LOADOUT</div>
+      <div class="pick-grid" id="menuLoadoutGrid"></div>
+
+      <div class="menu-label">MODIFIERS</div>
+      <div class="pov-row">
+        <button class="pov-btn" id="modHeadshot" data-mod="headshot">HEADSHOTS ONLY</button>
+        <button class="pov-btn" id="modFast" data-mod="fastEnemies">FAST ENEMIES</button>
+        <button class="pov-btn" id="modNoRegen" data-mod="noRegen">NO REGEN</button>
+      </div>
+
+      <div class="menu-actions">
+        <p class="hint" id="menuSummary" style="margin:0"></p>
+        <button class="cta" id="menuBeginBtn">Begin operation</button>
+        <button class="cta" id="menuLeaderboardBtn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Leaderboard</button>
+        <button class="cta" id="menuDailyBtn" style="background:transparent;border:1px solid var(--signal);color:var(--signal)">Daily challenge</button>
+        <button class="cta" id="menuTrainBtn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Training</button>
+        <button class="cta" id="menuControlsBtn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Controls</button>
+        <button class="cta" id="menuCustomBtn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Custom match</button>
+        <button class="cta" id="menuSkillsBtn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Skills</button>
+        <button class="cta" id="menuEditorBtn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Arena editor</button>
+        <button class="cta" id="menuArmoryBtn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Armory</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- start -->
+
+  <!-- pause -->
+  <div class="screen" id="pauseScreen">
+    <div class="panel">
+      <div class="kicker">OPERATION PAUSED</div>
+      <h1>Standing by</h1>
+      <p class="sub">The compound is holding its breath. Adjust anything you need, then press Resume (or P).</p>
+      <div class="settings" data-settings></div>
+      <button class="cta" id="resumeBtn">Resume</button>
+      <button class="cta" id="editTouchBtn">Edit touch layout</button>
+      <button class="cta" id="controlsBtn" style="margin-top:10px;background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Controls &amp; key bindings</button>
+      <button class="cta" id="quitBtn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone);margin-top:10px">Quit to menu</button>
+    </div>
+  </div>
+
+  <!-- level cleared -->
+  <div class="screen" id="levelScreen">
+    <div class="panel">
+      <div class="kicker"><span id="lvDone">Dust Quarter</span> secured</div>
+      <h1>Next location</h1>
+      <div style="border-left:2px solid var(--signal);padding-left:16px;margin:0 0 24px">
+        <div style="font-family:var(--hud-font);font-size:34px;font-weight:700;line-height:1" id="lvNextName">Harbour Yard</div>
+        <div style="font-size:12px;color:var(--smoke);margin:4px 0 12px" id="lvNextWhere">Pier 12</div>
+        <p class="sub" style="margin:0" id="lvBrief"></p>
+      </div>
+      <div class="result">
+        <div><span id="lvKills">0</span><em>HOSTILES DOWN</em></div>
+        <div><span id="lvScore">0</span><em>SCORE</em></div>
+      </div>
+      <button class="cta" id="lvBtn">Move up</button>
+      <p class="hint">You redeploy with full magazines and a partial resupply.</p>
+    </div>
+  </div>
+
+  <!-- campaign won -->
+  <div class="screen" id="winScreen">
+    <div class="panel">
+      <div class="kicker" style="color:var(--ok)">ALL SECTORS CLEAR</div>
+      <h1>Compound taken</h1>
+      <p class="sub">Five locations held, from the market road to whatever is left of Block 9. Extraction is inbound.</p>
+      <div class="result">
+        <div><span id="wKills">0</span><em>HOSTILES DOWN</em></div>
+        <div><span id="wScore">0</span><em>FINAL SCORE</em></div>
+      </div>
+      <button class="cta" id="winBtn">Run it again</button>
+      <button class="cta" id="ngBtn" style="margin-top:10px">New Game+</button>
+      <button class="cta" id="rematchWin" style="margin-top:10px;background:transparent;border:1px solid var(--signal);color:var(--signal)">Rematch · same arena</button>
+      <button class="cta" id="shareWin" style="margin-top:10px;background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Share card</button>
+    </div>
+  </div>
+
+  <!-- game over -->
+  <div class="screen" id="overScreen">
+    <div class="panel">
+      <div class="kicker" style="color:var(--blood)">SIGNAL LOST</div>
+      <h1>You went down</h1>
+      <div class="result">
+        <div><span id="rWave" style="font-size:30px">Dust Quarter</span><em id="rWaveLabel">LAST LOCATION</em></div>
+        <div><span id="rKills">0</span><em>HOSTILES DOWN</em></div>
+        <div><span id="rScore">0</span><em>SCORE</em></div>
+      </div>
+      <button class="cta" id="againBtn">Plan next drop</button>
+      <button class="cta" id="rematchOver" style="margin-top:10px;background:transparent;border:1px solid var(--signal);color:var(--signal)">Rematch · same arena</button>
+      <button class="cta" id="shareOver" style="margin-top:10px;background:transparent;border:1px solid rgba(255,255,255,.3);color:var(--bone)">Share card</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script src="expansion.js"></script>
+</body>
+</html>
